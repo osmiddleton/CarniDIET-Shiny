@@ -18,7 +18,9 @@
 
 # Packages ----
 library(pacman)
-pacman::p_load(shiny, leaflet, sf, sp, tidyverse, shinythemes, shinyWidgets, golem)
+pacman::p_load(shiny, leaflet, sf, sp, tidyverse, shinythemes,
+               shinyWidgets, golem,RColorBrewer, scales,
+               lattice, dplyr)
 
 # Loading data -----
 carnidiet <- read.csv("./Data/CarniDIET 1.0.csv") # CarniDIET
@@ -39,6 +41,7 @@ studies <- studies %>% filter(!is.na(decimalLatitude) |
 
 # Change names of coordinatres
 tib <- as_tibble(studies)
+tib$id <- 1:nrow(tib)
 
 # CarniDIET Shiny App ----
 
@@ -129,10 +132,6 @@ server = function(input, output, session) {
   # })
    
   
-  range <- reactive({
-    current.ranges %>% filter(Species %in% input$species)
-  })
-  
   # Create map to show all data
   output$mymap <- renderLeaflet ({
     leaflet() %>%
@@ -141,9 +140,9 @@ server = function(input, output, session) {
       addCircles(data = tib,
                  lng = ~decimalLongitude,
                  lat = ~decimalLatitude,
-                 popup = ~paste(familyCarni, scientificNameCarni, country, sep = "; "),
+                 #popup = ~paste(familyCarni, scientificNameCarni, country, sep = "; "),
                  color = "lightgrey") %>%
-      
+
       # addCircles(data = tab.family(),
       #            lng = ~decimalLongitude,
       #            lat = ~decimalLatitude,
@@ -154,7 +153,9 @@ server = function(input, output, session) {
       addCircles(data = res_mod(),
                  lng = ~decimalLongitude,
                  lat = ~decimalLatitude,
-                 popup = ~ paste(familyCarni, scientificNameCarni, country, sep = "; "),
+                 popup = ~paste(sep = "<br/>", paste0("<B>",country,"</B>"), scientificNameCarni),
+                    
+                 #popup = ~ paste(familyCarni, scientificNameCarni, country, sep = "; "),
                  color = "black",
                  weight = 5)
        # addPolygons(data = range(),
@@ -164,33 +165,6 @@ server = function(input, output, session) {
        # 
   })
 
-  # Show a popup at the given location
-  showZipcodePopup <- function(zipcode, lat, long) {
-    selectedZip <- allzips[allzips$zipcode == zipcode,]
-    content <- as.character(tagList(
-      tags$h4("Score:", as.integer(selectedZip$centile)),
-      tags$strong(HTML(sprintf("%s, %s %s",
-                               selectedZip$city.x, selectedZip$state.x, selectedZip$zipcode
-      ))), tags$br(),
-      sprintf("Median household income: %s", dollar(selectedZip$income * 1000)), tags$br(),
-      sprintf("Percent of adults with BA: %s%%", as.integer(selectedZip$college)), tags$br(),
-      sprintf("Adult population: %s", selectedZip$adultpop)
-    ))
-    leafletProxy("map") %>% addPopups(lng, lat, content, layerId = zipcode)
-  }
-  
-  # When map is clicked, show a popup with city info
-  observe({
-    leafletProxy("map") %>% clearPopups()
-    event <- input$map_shape_click
-    if (is.null(event))
-      return()
-    
-    isolate({
-      showZipcodePopup(event$id, event$lat, event$lng)
-    })
-  })
-  
   # Generate a table of the studies for the selected species
   output$table <- renderTable({
     
