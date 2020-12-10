@@ -60,15 +60,19 @@ ui = fluidPage(
   # UI Theme
   #theme = shinytheme("united"),
   
-  # Name of the app
-  #column(3, offset = 5, titlePanel("CarniDIET 1.0")),
+  tags$head(HTML("<title> CarniDIET 1.0 </title>")),
   
-  titlePanel("Version 1.0"),
+  navbarPage(title = span(img(src = "logosmall.png", style = "margin-top: -14px", height = 65))),
+  
+  # Name of the app
+  #column(3, offset = 5, titlePanel(img(src = "logosmall.png"))),
+  
+  #titlePanel(img(src = "logosmall.png")),
   
   # Panel layout names and UI output  
   
     sidebarPanel(
-        img(src = "logosmall.png"),
+        #img(src = "logosmall.png"),
         selectizeGroupUI(
           id = "my-filters",
           inline = FALSE,
@@ -153,8 +157,12 @@ server = function(input, output, session) {
       addCircles(data = res_mod(),
                  lng = ~decimalLongitude,
                  lat = ~decimalLatitude,
-                 popup = ~paste(sep = "<br/>", paste0("<B>",country,"</B>"), scientificNameCarni),
-                    
+                 popup = ~paste(sep = "<br/>",
+                                paste0("<B>", country ,"</B>"),
+                                paste0("<B>", familyCarni,": </B>", "<I>", gsub("_", " ", scientificNameCarni), "</I>"),
+                                paste0("Life stage: ", lifeStageCarni),
+                                paste0("Sex: ", sexCarni)
+                 ),
                  #popup = ~ paste(familyCarni, scientificNameCarni, country, sep = "; "),
                  color = "black",
                  weight = 5)
