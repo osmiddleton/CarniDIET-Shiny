@@ -28,7 +28,7 @@ carnidiet <- read.csv("./Data/CarniDIET 1.0.csv") # CarniDIET
 #  Get individual studies to show distribution on the map
 studies <- carnidiet %>% 
   dplyr::group_by(familyCarni, scientificNameCarni, lifeStageCarni, sexCarni,
-                  sourcePrimaryReference, geographicRegion,country, stateProvince,
+                  sourceTitle, geographicRegion,country, stateProvince,
                   county, municipality, verbatimLocality, protectedAreaHigher, protectedAreaLower, islandGroup, island,
                   decimalLatitude, decimalLongitude) %>% 
   dplyr::summarise(x = length(scientificNameCarni))
